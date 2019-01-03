@@ -22,11 +22,10 @@ public class EchoServer {
         this.port = port;
     }
 
-    public static void main(String[] args)
-        throws Exception {
+    public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.err.println("Usage: " + EchoServer.class.getSimpleName() +
-                " <port>"
+                    " <port>"
             );
             return;
         }
@@ -35,26 +34,29 @@ public class EchoServer {
     }
 
     public void start() throws Exception {
-        final EchoServerHandler serverHandler = new EchoServerHandler();
-        EventLoopGroup group = new NioEventLoopGroup();
+        final EchoServerHandler echoServerHandler = new EchoServerHandler();
+        //创建EventLoopGroup
+        EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
         try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(group)
-                .channel(NioServerSocketChannel.class)
-                .localAddress(new InetSocketAddress(port))
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(serverHandler);
-                    }
-                });
-
-            ChannelFuture f = b.bind().sync();
+            ServerBootstrap serverBootstrap = new ServerBootstrap();
+            serverBootstrap.group(eventLoopGroup)
+                    //指定所使用的NIO 传输 channel
+                    .channel(NioServerSocketChannel.class)
+                    .localAddress(new InetSocketAddress(port))
+                    //添加一个EchoServerHandler 到子Channel的ChannelPipeline
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline().addLast(echoServerHandler);
+                        }
+                    });
+            //异步的绑定服务器,调用sync方法阻塞等待直到绑定完成
+            ChannelFuture channelFuture = serverBootstrap.bind().sync();
             System.out.println(EchoServer.class.getName() +
-                " started and listening for connections on " + f.channel().localAddress());
-            f.channel().closeFuture().sync();
+                    " started and listening for connections on " + channelFuture.channel().localAddress());
+            channelFuture.channel().closeFuture().sync();
         } finally {
-            group.shutdownGracefully().sync();
+            eventLoopGroup.shutdownGracefully().sync();
         }
     }
 }

@@ -26,7 +26,7 @@ public class ConnectExample {
      * Listing 1.4 Callback in action
      * */
     public static void connect() {
-        Channel channel = CHANNEL_FROM_SOMEWHERE; //reference form somewhere
+        Channel channel = CHANNEL_FROM_SOMEWHERE; //reference from somewhere
         // Does not block
         ChannelFuture future = channel.connect(
                 new InetSocketAddress("192.168.0.1", 25));
