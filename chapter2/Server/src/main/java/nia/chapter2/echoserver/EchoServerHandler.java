@@ -15,7 +15,9 @@ import io.netty.util.CharsetUtil;
  */
 
 /**
- * @Sharable 标示一个ChannelHandler 可以被多个Channel 安全地共享
+ * @Sharable
+ * 对于所有的客户端连接来说，都会使用同一个EchoServerHandler
+ * 标识一个ChannelHandler 可以被多个Channel 安全地共享
  */
 @Sharable
 public class EchoServerHandler extends ChannelInboundHandlerAdapter {
