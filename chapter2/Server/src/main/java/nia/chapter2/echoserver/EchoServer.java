@@ -23,18 +23,12 @@ public class EchoServer {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            System.err.println("Usage: " + EchoServer.class.getSimpleName() +
-                    " <port>"
-            );
-            return;
-        }
-        int port = Integer.parseInt(args[0]);
+        int port =9090;
         new EchoServer(port).start();
     }
 
     public void start() throws Exception {
-        //0、创建 ChannelHandler
+        //0、创建 ChannelHandler 用于实现业务逻辑
         final EchoServerHandler echoServerHandler = new EchoServerHandler();
         //1、创建EventLoopGroup
         EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
@@ -46,7 +40,12 @@ public class EchoServer {
                     .channel(NioServerSocketChannel.class)
                     //4、指定port
                     .localAddress(new InetSocketAddress(port))
-                    //5、添加一个EchoServerHandler 到子Channel的ChannelPipeline
+                    /**
+                     * 5、添加一个EchoServerHandler 到子Channel的ChannelPipeline
+                     当接收到一个新的连接时，一个新的子Channel 将会被创建，而ChannelInitializer 将会把一个你的
+                     EchoServerHandler 的实例添加到该Channel 的ChannelPipeline 中。正如我们之前所
+                     解释的，这个ChannelHandler 将会收到有关入站消息的通知
+                     */
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
@@ -57,10 +56,10 @@ public class EchoServer {
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             System.out.println(EchoServer.class.getName() +
                     " started and listening for connections on " + channelFuture.channel().localAddress());
-            //7 获取channel的closefuture 并且阻塞当前线程直到它完成
+            //7 获取channel的closefuture然后调用sync() 并且阻塞当前线程直到它完成
             channelFuture.channel().closeFuture().sync();
         } finally {
-            //8 关闭eventLoopGroup 释放所有的资源
+            //8 关闭eventLoopGroup 释放所有资源、包括所有被创建的线程
             eventLoopGroup.shutdownGracefully().sync();
         }
     }
